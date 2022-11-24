@@ -1,6 +1,26 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+import Head from "next/head";
+import { ChakraProvider } from "@chakra-ui/react";
+import { WagmiConfig, createClient } from "wagmi";
+import { getDefaultProvider } from "ethers";
+import { theme } from "../shared/theme";
+import type { AppProps } from "next/app";
+
+const client = createClient({
+  provider: getDefaultProvider(),
+});
 
 export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  return (
+    <>
+      <Head>
+        <title>Portfolio</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <WagmiConfig client={client}>
+        <ChakraProvider theme={theme}>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </WagmiConfig>
+    </>
+  );
 }
