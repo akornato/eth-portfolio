@@ -2,7 +2,7 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { Button } from "@chakra-ui/react";
 
 export const ConnectButton = () => {
-  const { address: connectedAddress, isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
 
@@ -13,8 +13,8 @@ export const ConnectButton = () => {
       }
     >
       {isConnected
-        ? `${connectedAddress?.substring(0, 5)}...${connectedAddress?.substring(
-            connectedAddress.length - 4
+        ? `${address?.substring(0, 5)}...${address?.substring(
+            address.length - 4
           )}`
         : "Connect"}
     </Button>
