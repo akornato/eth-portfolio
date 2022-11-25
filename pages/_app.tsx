@@ -6,6 +6,7 @@ import { theme } from "../shared/theme";
 import type { AppProps } from "next/app";
 
 const client = createClient({
+  autoConnect: true,
   provider: getDefaultProvider(),
 });
 
