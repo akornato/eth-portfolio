@@ -54,6 +54,25 @@ const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
     );
   }, [addressInfo]);
 
+  const tokens = useMemo(
+    () =>
+      [
+        {
+          balance: addressInfo.ETH.balance,
+          rawBalance: addressInfo.ETH.rawBalance,
+          tokenInfo: {
+            address: "",
+            decimals: 18,
+            image: "/eth.svg",
+            price: addressInfo.ETH.price,
+            symbol: "ETH",
+          },
+        },
+        ...(addressInfo.tokens || []),
+      ].sort((a, b) => (!!a.tokenInfo.price && !b.tokenInfo.price ? -1 : 1)),
+    [addressInfo]
+  );
+
   return (
     <Box p={[4, 8]}>
       <HStack alignItems="start">
@@ -70,24 +89,7 @@ const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
         <ConnectButton />
       </HStack>
       <Box h={8} />
-      {addressInfo && (
-        <TokensTable
-          tokens={[
-            {
-              balance: addressInfo.ETH.balance,
-              rawBalance: addressInfo.ETH.rawBalance,
-              tokenInfo: {
-                address: "",
-                decimals: 18,
-                image: "/eth.svg",
-                price: addressInfo.ETH.price,
-                symbol: "ETH",
-              },
-            },
-            ...(addressInfo.tokens || []),
-          ]}
-        />
-      )}
+      {addressInfo && <TokensTable tokens={tokens} />}
     </Box>
   );
 };
