@@ -12,6 +12,7 @@ import {
 import { SlWallet } from "react-icons/sl";
 import { ConnectButton } from "../components/ConnectButton";
 import { TokensTable } from "../components/TokensTable";
+import { formatCurrency } from "../shared/utils";
 import type { NextPage, GetServerSideProps } from "next";
 import type { AddressInfo } from "../shared/types";
 
@@ -61,7 +62,7 @@ const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
             <Icon as={SlWallet} w={[8, 12]} h={[8, 12]} mr={4} />
             <Stat>
               <StatLabel>Wallet</StatLabel>
-              <StatNumber>${totalWalletValue?.toFixed(2)}</StatNumber>
+              <StatNumber>{formatCurrency(totalWalletValue)}</StatNumber>
             </Stat>
           </HStack>
         )}

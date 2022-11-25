@@ -13,6 +13,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatCurrency } from "../shared/utils";
 import type { AddressInfo } from "../shared/types";
 
 const MotionTr = motion(
@@ -62,7 +63,9 @@ export const TokensTable: React.FC<{
                         <Text as="b" fontSize="xl">
                           {symbol}
                         </Text>
-                        {price && <Text mt={2}>${price.rate.toFixed(2)}</Text>}
+                        {price && (
+                          <Text mt={2}>{formatCurrency(price.rate)}</Text>
+                        )}
                       </Box>
                     </HStack>
                   </Td>
@@ -70,12 +73,11 @@ export const TokensTable: React.FC<{
                     {price && (
                       <>
                         <Text as="b" fontSize="xl">
-                          $
-                          {(
+                          {formatCurrency(
                             parseFloat(
                               ethers.utils.formatUnits(rawBalance, decimals)
                             ) * price.rate
-                          ).toFixed(2)}
+                          )}
                         </Text>
                         <Box h={2} />
                       </>
