@@ -30,6 +30,23 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   };
 };
 
+type Token = AddressInfo["tokens"][0];
+
+const sortTokens = (a: Token, b: Token) => {
+  if (!!a.tokenInfo.price && !b.tokenInfo.price) return -1;
+  if (!a.tokenInfo.price && !!b.tokenInfo.price) return 1;
+  if (!!a.tokenInfo.price && !!b.tokenInfo.price) {
+    const valueA =
+      parseFloat(ethers.utils.formatUnits(a.rawBalance, a.tokenInfo.decimals)) *
+      a.tokenInfo.price.rate;
+    const valueB =
+      parseFloat(ethers.utils.formatUnits(b.rawBalance, b.tokenInfo.decimals)) *
+      b.tokenInfo.price.rate;
+    return valueA > valueB ? -1 : 1;
+  }
+  return 0;
+};
+
 const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
   const totalWalletValue = useMemo(
     () =>
@@ -40,7 +57,7 @@ const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
                 (totalTokenValue, token) =>
                   totalTokenValue +
                   (token.tokenInfo.price
-                    ? parseInt(
+                    ? parseFloat(
                         ethers.utils.formatUnits(
                           token.rawBalance,
                           token.tokenInfo.decimals
@@ -71,7 +88,7 @@ const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
               },
             },
             ...(addressInfo.tokens || []),
-          ].sort((a, b) => (!!a.tokenInfo.price && !b.tokenInfo.price ? -1 : 1))
+          ].sort(sortTokens)
         : [],
     [addressInfo]
   );
