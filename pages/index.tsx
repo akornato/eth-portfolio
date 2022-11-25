@@ -31,45 +31,48 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 };
 
 const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
-  const totalWalletValue = useMemo(() => {
-    if (!addressInfo) return undefined;
-    return (
-      addressInfo.ETH.balance * addressInfo.ETH.price.rate +
-      (addressInfo.tokens
-        ? addressInfo.tokens.reduce(
-            (totalTokenValue, token) =>
-              totalTokenValue +
-              (token.tokenInfo.price
-                ? parseInt(
-                    ethers.utils.formatUnits(
-                      token.rawBalance,
-                      token.tokenInfo.decimals
-                    )
-                  ) * token.tokenInfo.price.rate
-                : 0),
+  const totalWalletValue = useMemo(
+    () =>
+      addressInfo
+        ? addressInfo.ETH.balance * addressInfo.ETH.price.rate +
+          (addressInfo.tokens
+            ? addressInfo.tokens.reduce(
+                (totalTokenValue, token) =>
+                  totalTokenValue +
+                  (token.tokenInfo.price
+                    ? parseInt(
+                        ethers.utils.formatUnits(
+                          token.rawBalance,
+                          token.tokenInfo.decimals
+                        )
+                      ) * token.tokenInfo.price.rate
+                    : 0),
 
-            0
-          )
-        : 0)
-    );
-  }, [addressInfo]);
+                0
+              )
+            : 0)
+        : undefined,
+    [addressInfo]
+  );
 
   const tokens = useMemo(
     () =>
-      [
-        {
-          balance: addressInfo.ETH.balance,
-          rawBalance: addressInfo.ETH.rawBalance,
-          tokenInfo: {
-            address: "",
-            decimals: 18,
-            image: "/eth.svg",
-            price: addressInfo.ETH.price,
-            symbol: "ETH",
-          },
-        },
-        ...(addressInfo.tokens || []),
-      ].sort((a, b) => (!!a.tokenInfo.price && !b.tokenInfo.price ? -1 : 1)),
+      addressInfo
+        ? [
+            {
+              balance: addressInfo.ETH.balance,
+              rawBalance: addressInfo.ETH.rawBalance,
+              tokenInfo: {
+                address: "",
+                decimals: 18,
+                image: "/eth.svg",
+                price: addressInfo.ETH.price,
+                symbol: "ETH",
+              },
+            },
+            ...(addressInfo.tokens || []),
+          ].sort((a, b) => (!!a.tokenInfo.price && !b.tokenInfo.price ? -1 : 1))
+        : [],
     [addressInfo]
   );
 
