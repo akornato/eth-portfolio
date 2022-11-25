@@ -14,7 +14,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Portfolio</title>
+        <title>ETH Portfolio</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <WagmiConfig client={client}>
