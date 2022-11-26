@@ -26,7 +26,15 @@ export type AddressHistory = {
   }[];
 };
 
-export type TokenHistory = {
+export type AddressTransactions = {
+  from: string;
+  success: boolean;
+  timestamp: number;
+  to: string;
+  value: number;
+}[];
+
+export type TxHistory = {
   value: number;
   timestamp: number;
   balance: number;

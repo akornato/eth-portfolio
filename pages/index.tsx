@@ -21,7 +21,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   if (!query?.address) {
     return { props: {} };
   }
-  const [addressInfo, addressHistory] = await Promise.all([
+  const [addressInfo, addressHistory, addressTransactions] = await Promise.all([
     fetch(
       `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
         process.env.ETHPLORER_API_KEY || "freekey"
@@ -32,16 +32,22 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
         process.env.ETHPLORER_API_KEY || "freekey"
       }`
     ).then((res) => res.json()),
+    fetch(
+      `https://api.ethplorer.io/getAddressTransactions/${
+        query.address
+      }?apiKey=${process.env.ETHPLORER_API_KEY || "freekey"}`
+    ).then((res) => res.json()),
   ]);
   return {
-    props: { addressInfo, addressHistory },
+    props: { addressInfo, addressHistory, addressTransactions },
   };
 };
 
 const Home: NextPage<{
   addressInfo: AddressInfo;
   addressHistory: AddressHistory;
-}> = ({ addressInfo, addressHistory }) => {
+  addressTransactions: any;
+}> = ({ addressInfo, addressHistory, addressTransactions }) => {
   const totalWalletValue = useMemo(
     () =>
       addressInfo
@@ -85,8 +91,7 @@ const Home: NextPage<{
       {addressInfo && (
         <Container>
           <TokenList
-            addressInfo={addressInfo}
-            addressHistory={addressHistory}
+            {...{ addressInfo, addressHistory, addressTransactions }}
           />
         </Container>
       )}

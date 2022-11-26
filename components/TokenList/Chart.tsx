@@ -5,12 +5,13 @@ import { Box, Text, Center } from "@chakra-ui/react";
 import type {
   AddressInfo,
   AddressHistory,
-  TokenHistory,
+  TxHistory,
+  AddressTransactions,
 } from "../../shared/types";
 
 const CustomTooltip: React.FC<{
   active?: boolean;
-  payload?: [{ value: number; payload: TokenHistory[0] }];
+  payload?: [{ value: number; payload: TxHistory[0] }];
   label?: string;
 }> = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -35,77 +36,120 @@ export const Chart: React.FC<{
   tokenAddress?: string;
   addressInfo?: AddressInfo;
   addressHistory?: AddressHistory;
-}> = ({ tokenAddress, addressInfo, addressHistory }) => {
+  addressTransactions?: AddressTransactions;
+}> = ({ tokenAddress, addressInfo, addressHistory, addressTransactions }) => {
+  const ethHistory = useMemo(() => {
+    return (
+      addressTransactions
+        ?.sort((a, b) => (a.timestamp < b.timestamp ? -1 : 1))
+        .reduce((ethHistory, tx) => {
+          const previousBalance =
+            ethHistory.length > 0
+              ? ethHistory[ethHistory.length - 1].balance
+              : 0;
+          if (tx.to === addressInfo?.address) {
+            return [
+              ...ethHistory,
+              {
+                value: tx.value,
+                timestamp: tx.timestamp,
+                balance: previousBalance + tx.value,
+                type: "Incoming",
+                symbol: "ETH",
+              },
+            ];
+          }
+          if (tx.from === addressInfo?.address) {
+            return [
+              ...ethHistory,
+              {
+                value: tx.value,
+                timestamp: tx.timestamp,
+                balance: previousBalance - tx.value,
+                type: "Outgoing",
+                symbol: "ETH",
+              },
+            ];
+          }
+          return ethHistory;
+        }, [] as TxHistory) || []
+    );
+  }, [addressTransactions, addressInfo]);
+
   const tokenHistory = useMemo(
     () =>
-      addressHistory?.operations.reduce((tokenHistory, operation) => {
-        if (operation.tokenInfo.address === tokenAddress) {
-          const previousBalance =
-            tokenHistory.length > 0
-              ? tokenHistory[tokenHistory.length - 1].balance
-              : 0;
-          if (
-            operation.to === addressInfo?.address &&
-            operation.type === "transfer"
-          ) {
-            const parsedValue = parseFloat(
-              ethers.utils.formatUnits(
-                operation.value,
-                operation.tokenInfo.decimals
-              )
-            );
-            return [
-              ...tokenHistory,
-              {
-                value: parsedValue,
-                timestamp: operation.timestamp,
-                balance: previousBalance + parsedValue,
-                type: "Incoming",
-                symbol: operation.tokenInfo.symbol,
-              },
-            ];
+      addressHistory?.operations
+        ?.sort((a, b) => (a.timestamp < b.timestamp ? -1 : 1))
+        .reduce((tokenHistory, operation) => {
+          if (operation.tokenInfo.address === tokenAddress) {
+            const previousBalance =
+              tokenHistory.length > 0
+                ? tokenHistory[tokenHistory.length - 1].balance
+                : 0;
+            if (
+              operation.to === addressInfo?.address &&
+              operation.type === "transfer"
+            ) {
+              const parsedValue = parseFloat(
+                ethers.utils.formatUnits(
+                  operation.value,
+                  operation.tokenInfo.decimals
+                )
+              );
+              return [
+                ...tokenHistory,
+                {
+                  value: parsedValue,
+                  timestamp: operation.timestamp,
+                  balance: previousBalance + parsedValue,
+                  type: "Incoming",
+                  symbol: operation.tokenInfo.symbol,
+                },
+              ];
+            }
+            if (
+              operation.from === addressInfo?.address &&
+              operation.type === "transfer"
+            ) {
+              const parsedValue = parseFloat(
+                ethers.utils.formatUnits(
+                  operation.value,
+                  operation.tokenInfo.decimals
+                )
+              );
+              return [
+                ...tokenHistory,
+                {
+                  value: parsedValue,
+                  timestamp: operation.timestamp,
+                  balance: previousBalance - parsedValue,
+                  type: "Outgoing",
+                  symbol: operation.tokenInfo.symbol,
+                },
+              ];
+            }
           }
-          if (
-            operation.from === addressInfo?.address &&
-            operation.type === "transfer"
-          ) {
-            const parsedValue = parseFloat(
-              ethers.utils.formatUnits(
-                operation.value,
-                operation.tokenInfo.decimals
-              )
-            );
-            return [
-              ...tokenHistory,
-              {
-                value: parsedValue,
-                timestamp: operation.timestamp,
-                balance: previousBalance - parsedValue,
-                type: "Outgoing",
-                symbol: operation.tokenInfo.symbol,
-              },
-            ];
-          }
-        }
-        return tokenHistory;
-      }, [] as TokenHistory) || [],
+          return tokenHistory;
+        }, [] as TxHistory) || [],
     [addressHistory, addressInfo, tokenAddress]
   );
 
-  return tokenHistory.length > 0 ? (
+  const chartData = tokenAddress ? tokenHistory : ethHistory;
+
+  return chartData && chartData.length > 0 ? (
     <ResponsiveContainer>
-      <AreaChart data={tokenHistory}>
+      <AreaChart data={tokenAddress ? tokenHistory : ethHistory}>
         <defs>
           <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="Lime" stopOpacity={0.3} />
-            <stop offset="100%" stopColor="Lime" stopOpacity={0} />
+            <stop offset="0%" stopColor="LightSkyBlue" stopOpacity={0.3} />
+            <stop offset="100%" stopColor="LightSkyBlue" stopOpacity={0} />
           </linearGradient>
         </defs>
         <Tooltip content={<CustomTooltip />} cursor={false} />
         <Area
           type="monotone"
           dataKey="balance"
-          stroke="Lime"
+          stroke="LightSkyBlue"
           fill="url(#colorUv)"
         />
       </AreaChart>

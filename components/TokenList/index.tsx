@@ -2,7 +2,11 @@ import React, { useState, useMemo } from "react";
 import { ethers } from "ethers";
 import { AnimatePresence } from "framer-motion";
 import { MemoizedRow } from "./Row";
-import type { AddressInfo, AddressHistory } from "../../shared/types";
+import type {
+  AddressInfo,
+  AddressHistory,
+  AddressTransactions,
+} from "../../shared/types";
 
 export type Token = AddressInfo["tokens"][0];
 
@@ -24,7 +28,8 @@ const sortTokens = (a: Token, b: Token) => {
 export const TokenList: React.FC<{
   addressInfo?: AddressInfo;
   addressHistory?: AddressHistory;
-}> = ({ addressInfo, addressHistory }) => {
+  addressTransactions?: AddressTransactions;
+}> = ({ addressInfo, addressHistory, addressTransactions }) => {
   const [chartOpenedTokenAddress, setChartOpenedTokenAddress] =
     useState<string>();
 
@@ -43,8 +48,8 @@ export const TokenList: React.FC<{
                 symbol: "ETH",
               },
             },
-            ...(addressInfo.tokens || []),
-          ].sort(sortTokens)
+            ...(addressInfo.tokens?.sort(sortTokens) || []),
+          ]
         : [],
     [addressInfo]
   );
@@ -54,11 +59,14 @@ export const TokenList: React.FC<{
       {tokens?.map((token) => (
         <MemoizedRow
           key={token.tokenInfo.address}
-          token={token}
-          addressInfo={addressInfo}
-          addressHistory={addressHistory}
           chartOpened={token.tokenInfo.address === chartOpenedTokenAddress}
-          setChartOpenedTokenAddress={setChartOpenedTokenAddress}
+          {...{
+            token,
+            addressInfo,
+            addressHistory,
+            addressTransactions,
+            setChartOpenedTokenAddress,
+          }}
         />
       ))}
     </AnimatePresence>

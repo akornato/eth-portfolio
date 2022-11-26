@@ -5,7 +5,11 @@ import { forwardRef } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { Chart } from "./Chart";
 import { formatCurrency } from "../../shared/utils";
-import type { AddressInfo, AddressHistory } from "../../shared/types";
+import type {
+  AddressInfo,
+  AddressHistory,
+  AddressTransactions,
+} from "../../shared/types";
 import type { Token } from "./index";
 
 export const MotionBox = motion(
@@ -17,6 +21,7 @@ const Row: React.FC<{
   token: Token;
   addressInfo?: AddressInfo;
   addressHistory?: AddressHistory;
+  addressTransactions?: AddressTransactions;
   chartOpened?: boolean;
   setChartOpenedTokenAddress: (
     fun: (arg?: string) => string | undefined
@@ -24,20 +29,21 @@ const Row: React.FC<{
 }> = ({
   token: {
     rawBalance,
-    tokenInfo: { address, symbol, price, image, decimals },
+    tokenInfo: { address: tokenAddress, symbol, price, image, decimals },
   },
   addressInfo,
   addressHistory,
+  addressTransactions,
   chartOpened,
   setChartOpenedTokenAddress,
 }) => (
-  <React.Fragment key={address}>
+  <React.Fragment key={tokenAddress}>
     <MotionBox
       mt={4}
       backgroundColor="whiteAlpha.50"
       rounded="lg"
-      border='1px'
-      borderColor='gray.700'
+      border="1px"
+      borderColor="gray.700"
       p={2}
       layout
       initial={{ opacity: 0 }}
@@ -48,8 +54,8 @@ const Row: React.FC<{
         filter: "brightness(1.5)",
       }}
       onClick={() =>
-        setChartOpenedTokenAddress((currentAddress) =>
-          currentAddress === address ? undefined : address
+        setChartOpenedTokenAddress((currentTokenAddress) =>
+          currentTokenAddress === tokenAddress ? undefined : tokenAddress
         )
       }
     >
@@ -107,9 +113,12 @@ const Row: React.FC<{
     >
       {chartOpened && (
         <Chart
-          addressInfo={addressInfo}
-          addressHistory={addressHistory}
-          tokenAddress={address}
+          {...{
+            tokenAddress,
+            addressInfo,
+            addressHistory,
+            addressTransactions,
+          }}
         />
       )}
     </MotionBox>
