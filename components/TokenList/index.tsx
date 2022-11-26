@@ -35,7 +35,7 @@ export const TokenList: React.FC<{
 
   const tokens = useMemo(
     () =>
-      addressInfo
+      addressInfo?.ETH
         ? [
             {
               balance: addressInfo.ETH.balance,

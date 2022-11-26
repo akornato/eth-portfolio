@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/router";
 import { ethers } from "ethers";
 import {
   Container,
@@ -14,43 +15,52 @@ import { SlWallet } from "react-icons/sl";
 import { ConnectButton } from "../components/ConnectButton";
 import { TokenList } from "../components/TokenList";
 import { formatCurrency } from "../shared/utils";
-import type { NextPage, GetServerSideProps } from "next";
-import type { AddressInfo, AddressHistory } from "../shared/types";
+import type { NextPage } from "next";
+import type {
+  AddressInfo,
+  AddressHistory,
+  AddressTransactions,
+} from "../shared/types";
 
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  if (!query?.address) {
-    return { props: {} };
-  }
-  const [addressInfo, addressHistory, addressTransactions] = await Promise.all([
-    fetch(
-      `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
-        process.env.ETHPLORER_API_KEY || "freekey"
-      }`
-    ).then((res) => res.json()),
-    fetch(
-      `https://api.ethplorer.io/getAddressHistory/${query.address}?apiKey=${
-        process.env.ETHPLORER_API_KEY || "freekey"
-      }`
-    ).then((res) => res.json()),
-    fetch(
-      `https://api.ethplorer.io/getAddressTransactions/${
-        query.address
-      }?apiKey=${process.env.ETHPLORER_API_KEY || "freekey"}`
-    ).then((res) => res.json()),
-  ]);
-  return {
-    props: { addressInfo, addressHistory, addressTransactions },
-  };
-};
+const Home: NextPage = () => {
+  const { query } = useRouter();
+  const [addressInfo, setAddressInfo] = useState<AddressInfo>();
+  const [addressHistory, setAddressHistory] = useState<AddressHistory>();
+  const [addressTransactions, setAddressTransactions] =
+    useState<AddressTransactions>();
 
-const Home: NextPage<{
-  addressInfo: AddressInfo;
-  addressHistory: AddressHistory;
-  addressTransactions: any;
-}> = ({ addressInfo, addressHistory, addressTransactions }) => {
+  useEffect(() => {
+    const fetchInfo = async () => {
+      if (query.address) {
+        fetch(
+          `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
+            process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+          }`
+        )
+          .then((res) => res.json())
+          .then(setAddressInfo);
+        fetch(
+          `https://api.ethplorer.io/getAddressHistory/${query.address}?apiKey=${
+            process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+          }`
+        )
+          .then((res) => res.json())
+          .then(setAddressHistory);
+        fetch(
+          `https://api.ethplorer.io/getAddressTransactions/${
+            query.address
+          }?apiKey=${process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"}`
+        )
+          .then((res) => res.json())
+          .then(setAddressTransactions);
+      }
+    };
+    fetchInfo();
+  }, [query.address]);
+
   const totalWalletValue = useMemo(
     () =>
-      addressInfo
+      addressInfo?.ETH
         ? addressInfo.ETH.balance * addressInfo.ETH.price.rate +
           (addressInfo.tokens
             ? addressInfo.tokens.reduce(
