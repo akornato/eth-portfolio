@@ -42,16 +42,15 @@ const Row: React.FC<{
       mt={4}
       backgroundColor="whiteAlpha.50"
       rounded="lg"
-      border="1px"
-      borderColor="gray.700"
-      p={2}
+      py={2}
+      px={4}
       layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       cursor="pointer"
       whileHover={{
-        filter: "brightness(1.5)",
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
       }}
       onClick={() =>
         setChartOpenedTokenAddress((currentTokenAddress) =>

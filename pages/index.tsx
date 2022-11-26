@@ -10,6 +10,8 @@ import {
   StatNumber,
   Spacer,
   HStack,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { SlWallet } from "react-icons/sl";
 import { ConnectButton } from "../components/ConnectButton";
@@ -24,6 +26,7 @@ import type {
 
 const Home: NextPage = () => {
   const { query } = useRouter();
+  const [loading, setLoading] = useState(false);
   const [addressInfo, setAddressInfo] = useState<AddressInfo>();
   const [addressHistory, setAddressHistory] = useState<AddressHistory>();
   const [addressTransactions, setAddressTransactions] =
@@ -32,27 +35,35 @@ const Home: NextPage = () => {
   useEffect(() => {
     const fetchInfo = async () => {
       if (query.address) {
-        fetch(
-          `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
-            process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
-          }`
-        )
-          .then((res) => res.json())
-          .then(setAddressInfo);
-        fetch(
-          `https://api.ethplorer.io/getAddressHistory/${query.address}?apiKey=${
-            process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
-          }`
-        )
-          .then((res) => res.json())
-          .then(setAddressHistory);
-        fetch(
-          `https://api.ethplorer.io/getAddressTransactions/${
-            query.address
-          }?apiKey=${process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"}`
-        )
-          .then((res) => res.json())
-          .then(setAddressTransactions);
+        setLoading(true);
+        const [newAddressInfo, newAddressHistory, newAddressTransactions] =
+          (await Promise.all([
+            fetch(
+              `https://api.ethplorer.io/getAddressInfo/${
+                query.address
+              }?apiKey=${
+                process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+              }`
+            ).then((res) => res.json()),
+            fetch(
+              `https://api.ethplorer.io/getAddressHistory/${
+                query.address
+              }?apiKey=${
+                process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+              }`
+            ).then((res) => res.json()),
+            fetch(
+              `https://api.ethplorer.io/getAddressTransactions/${
+                query.address
+              }?apiKey=${
+                process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+              }`
+            ).then((res) => res.json()),
+          ])) as unknown as [AddressInfo, AddressHistory, AddressTransactions];
+        setAddressInfo(newAddressInfo);
+        setAddressHistory(newAddressHistory);
+        setAddressTransactions(newAddressTransactions);
+        setLoading(false);
       }
     };
     fetchInfo();
@@ -83,29 +94,42 @@ const Home: NextPage = () => {
   );
 
   return (
-    <Box p={[4, 8]}>
-      <HStack alignItems="start">
-        {totalWalletValue !== undefined && (
-          <HStack>
-            <Icon as={SlWallet} w={[8, 12]} h={[8, 12]} mr={4} />
-            <Stat>
-              <StatLabel>Wallet</StatLabel>
-              <StatNumber>{formatCurrency(totalWalletValue)}</StatNumber>
-            </Stat>
-          </HStack>
-        )}
-        <Spacer />
-        <ConnectButton />
-      </HStack>
-      <Box h={8} />
-      {addressInfo && (
-        <Container>
+    <>
+      {loading && (
+        <Center
+          h="100vh"
+          position="fixed"
+          top={0}
+          right={0}
+          bottom={0}
+          left={0}
+        >
+          <Spinner size="xl" />
+        </Center>
+      )}
+      <Box p={[4, 8]}>
+        <HStack alignItems="start">
+          {totalWalletValue !== undefined && (
+            <HStack>
+              <Icon as={SlWallet} w={[8, 12]} h={[8, 12]} mr={4} />
+              <Stat>
+                <StatLabel>Wallet</StatLabel>
+                <StatNumber>{formatCurrency(totalWalletValue)}</StatNumber>
+              </Stat>
+            </HStack>
+          )}
+          <Spacer />
+          <ConnectButton />
+        </HStack>
+        <Box h={8} />
+
+        <Container padding={0}>
           <TokenList
             {...{ addressInfo, addressHistory, addressTransactions }}
           />
         </Container>
-      )}
-    </Box>
+      </Box>
+    </>
   );
 };
 
