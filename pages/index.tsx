@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ethers } from "ethers";
 import {
+  Container,
   Box,
   Icon,
   Stat,
@@ -11,43 +12,36 @@ import {
 } from "@chakra-ui/react";
 import { SlWallet } from "react-icons/sl";
 import { ConnectButton } from "../components/ConnectButton";
-import { TokensTable } from "../components/TokensTable";
+import { TokenList } from "../components/TokenList";
 import { formatCurrency } from "../shared/utils";
 import type { NextPage, GetServerSideProps } from "next";
-import type { AddressInfo } from "../shared/types";
+import type { AddressInfo, AddressHistory } from "../shared/types";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   if (!query?.address) {
     return { props: {} };
   }
-  const addressInfo = await fetch(
-    `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
-      process.env.ETHPLORER_API_KEY || "freekey"
-    }`
-  ).then((res) => res.json());
+  const [addressInfo, addressHistory] = await Promise.all([
+    fetch(
+      `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
+        process.env.ETHPLORER_API_KEY || "freekey"
+      }`
+    ).then((res) => res.json()),
+    fetch(
+      `https://api.ethplorer.io/getAddressHistory/${query.address}?apiKey=${
+        process.env.ETHPLORER_API_KEY || "freekey"
+      }`
+    ).then((res) => res.json()),
+  ]);
   return {
-    props: { addressInfo },
+    props: { addressInfo, addressHistory },
   };
 };
 
-type Token = AddressInfo["tokens"][0];
-
-const sortTokens = (a: Token, b: Token) => {
-  if (!!a.tokenInfo.price && !b.tokenInfo.price) return -1;
-  if (!a.tokenInfo.price && !!b.tokenInfo.price) return 1;
-  if (!!a.tokenInfo.price && !!b.tokenInfo.price) {
-    const valueA =
-      parseFloat(ethers.utils.formatUnits(a.rawBalance, a.tokenInfo.decimals)) *
-      a.tokenInfo.price.rate;
-    const valueB =
-      parseFloat(ethers.utils.formatUnits(b.rawBalance, b.tokenInfo.decimals)) *
-      b.tokenInfo.price.rate;
-    return valueA > valueB ? -1 : 1;
-  }
-  return 0;
-};
-
-const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
+const Home: NextPage<{
+  addressInfo: AddressInfo;
+  addressHistory: AddressHistory;
+}> = ({ addressInfo, addressHistory }) => {
   const totalWalletValue = useMemo(
     () =>
       addressInfo
@@ -72,27 +66,6 @@ const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
     [addressInfo]
   );
 
-  const tokens = useMemo(
-    () =>
-      addressInfo
-        ? [
-            {
-              balance: addressInfo.ETH.balance,
-              rawBalance: addressInfo.ETH.rawBalance,
-              tokenInfo: {
-                address: "",
-                decimals: 18,
-                image: "/eth.svg",
-                price: addressInfo.ETH.price,
-                symbol: "ETH",
-              },
-            },
-            ...(addressInfo.tokens || []),
-          ].sort(sortTokens)
-        : [],
-    [addressInfo]
-  );
-
   return (
     <Box p={[4, 8]}>
       <HStack alignItems="start">
@@ -109,7 +82,14 @@ const Home: NextPage<{ addressInfo: AddressInfo }> = ({ addressInfo }) => {
         <ConnectButton />
       </HStack>
       <Box h={8} />
-      {addressInfo && <TokensTable tokens={tokens} />}
+      {addressInfo && (
+        <Container>
+          <TokenList
+            addressInfo={addressInfo}
+            addressHistory={addressHistory}
+          />
+        </Container>
+      )}
     </Box>
   );
 };
