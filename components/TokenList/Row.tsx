@@ -105,6 +105,7 @@ const Row: React.FC<{
       </HStack>
     </MotionBox>
     <MotionBox
+      mt={4}
       layout
       style={{
         height: chartOpened ? 300 : 0,

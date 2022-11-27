@@ -41,7 +41,7 @@ export const Chart: React.FC<{
   const ethHistory = useMemo(() => {
     return (
       addressTransactions
-        ?.sort((a, b) => (a.timestamp < b.timestamp ? -1 : 1))
+        ?.sort((a, b) => a.timestamp - b.timestamp)
         .reduce((ethHistory, tx) => {
           const previousBalance =
             ethHistory.length > 0
@@ -79,7 +79,7 @@ export const Chart: React.FC<{
   const tokenHistory = useMemo(
     () =>
       addressHistory?.operations
-        ?.sort((a, b) => (a.timestamp < b.timestamp ? -1 : 1))
+        ?.sort((a, b) => a.timestamp - b.timestamp)
         .reduce((tokenHistory, operation) => {
           if (operation.tokenInfo.address === tokenAddress) {
             const previousBalance =
@@ -138,7 +138,10 @@ export const Chart: React.FC<{
 
   return chartData && chartData.length > 0 ? (
     <ResponsiveContainer>
-      <AreaChart data={tokenAddress ? tokenHistory : ethHistory}>
+      <AreaChart
+        data={tokenAddress ? tokenHistory : ethHistory}
+        margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+      >
         <defs>
           <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="LightSkyBlue" stopOpacity={0.3} />
