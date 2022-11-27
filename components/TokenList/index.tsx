@@ -2,11 +2,7 @@ import React, { useState, useMemo } from "react";
 import { ethers } from "ethers";
 import { AnimatePresence } from "framer-motion";
 import { MemoizedRow } from "./Row";
-import type {
-  AddressInfo,
-  AddressHistory,
-  AddressTransactions,
-} from "../../shared/types";
+import type { AddressInfo } from "../../shared/types";
 
 export type Token = AddressInfo["tokens"][0];
 
@@ -27,8 +23,7 @@ const sortTokens = (a: Token, b: Token) => {
 
 export const TokenList: React.FC<{
   addressInfo?: AddressInfo;
-  addressTransactions?: AddressTransactions;
-}> = ({ addressInfo, addressTransactions }) => {
+}> = ({ addressInfo }) => {
   const [chartOpenedTokenAddress, setChartOpenedTokenAddress] =
     useState<string>();
 
@@ -62,7 +57,6 @@ export const TokenList: React.FC<{
           {...{
             token,
             addressInfo,
-            addressTransactions,
             setChartOpenedTokenAddress,
           }}
         />

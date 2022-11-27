@@ -35,22 +35,39 @@ const CustomTooltip: React.FC<{
 export const Chart: React.FC<{
   tokenAddress?: string;
   addressInfo?: AddressInfo;
-  addressTransactions?: AddressTransactions;
-}> = ({ tokenAddress, addressInfo, addressTransactions }) => {
+}> = ({ tokenAddress, addressInfo }) => {
+  const [loading, setLoading] = useState(false);
   const [addressHistory, setAddressHistory] = useState<AddressHistory>();
+  const [addressTransactions, setAddressTransactions] =
+    useState<AddressTransactions>();
 
   useEffect(() => {
-    if (tokenAddress) {
-      fetch(
-        `https://api.ethplorer.io/getAddressHistory/${
-          addressInfo?.address
-        }?apiKey=${
-          process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
-        }&limit=1000&token=${tokenAddress}`
-      )
-        .then((res) => res.json())
-        .then(setAddressHistory);
-    }
+    const getHistory = async () => {
+      setLoading(true);
+      if (tokenAddress) {
+        await fetch(
+          `https://api.ethplorer.io/getAddressHistory/${
+            addressInfo?.address
+          }?apiKey=${
+            process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+          }&limit=1000&token=${tokenAddress}`
+        )
+          .then((res) => res.json())
+          .then(setAddressHistory);
+      } else {
+        await fetch(
+          `https://api.ethplorer.io/getAddressTransactions/${
+            addressInfo?.address
+          }?apiKey=${
+            process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+          }&limit=1000`
+        )
+          .then((res) => res.json())
+          .then(setAddressTransactions);
+      }
+      setLoading(false);
+    };
+    getHistory();
   }, [addressInfo, tokenAddress]);
 
   const ethHistory = useMemo(() => {
@@ -149,7 +166,7 @@ export const Chart: React.FC<{
 
   const chartData = tokenAddress ? tokenHistory : ethHistory;
 
-  return chartData && chartData.length > 0 ? (
+  return loading ? null : chartData && chartData.length > 1 ? (
     <ResponsiveContainer>
       <AreaChart
         data={tokenAddress ? tokenHistory : ethHistory}

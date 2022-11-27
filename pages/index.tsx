@@ -18,39 +18,23 @@ import { ConnectButton } from "../components/ConnectButton";
 import { TokenList } from "../components/TokenList";
 import { formatCurrency } from "../shared/utils";
 import type { NextPage } from "next";
-import type {
-  AddressInfo,
-  AddressHistory,
-  AddressTransactions,
-} from "../shared/types";
+import type { AddressInfo } from "../shared/types";
 
 const Home: NextPage = () => {
   const { query } = useRouter();
   const [loading, setLoading] = useState(false);
   const [addressInfo, setAddressInfo] = useState<AddressInfo>();
-  const [addressTransactions, setAddressTransactions] =
-    useState<AddressTransactions>();
 
   useEffect(() => {
     const fetchInfo = async () => {
       if (query.address) {
         setLoading(true);
-        const [newAddressInfo, newAddressTransactions] = (await Promise.all([
-          fetch(
-            `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
-              process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
-            }`
-          ).then((res) => res.json()),
-          fetch(
-            `https://api.ethplorer.io/getAddressTransactions/${
-              query.address
-            }?apiKey=${
-              process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
-            }&limit=1000`
-          ).then((res) => res.json()),
-        ])) as unknown as [AddressInfo, AddressTransactions];
+        const newAddressInfo = await fetch(
+          `https://api.ethplorer.io/getAddressInfo/${query.address}?apiKey=${
+            process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+          }`
+        ).then((res) => res.json());
         setAddressInfo(newAddressInfo);
-        setAddressTransactions(newAddressTransactions);
         setLoading(false);
       }
     };
@@ -112,7 +96,7 @@ const Home: NextPage = () => {
         <Box h={8} />
 
         <Container padding={0}>
-          <TokenList {...{ addressInfo, addressTransactions }} />
+          <TokenList addressInfo={addressInfo} />
         </Container>
       </Box>
     </>

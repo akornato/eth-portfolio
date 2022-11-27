@@ -5,11 +5,7 @@ import { forwardRef } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { Chart } from "./Chart";
 import { formatCurrency } from "../../shared/utils";
-import type {
-  AddressInfo,
-  AddressHistory,
-  AddressTransactions,
-} from "../../shared/types";
+import type { AddressInfo } from "../../shared/types";
 import type { Token } from "./index";
 
 export const MotionBox = motion(
@@ -20,7 +16,6 @@ MotionBox.displayName = "MotionBox";
 const Row: React.FC<{
   token: Token;
   addressInfo?: AddressInfo;
-  addressTransactions?: AddressTransactions;
   chartOpened?: boolean;
   setChartOpenedTokenAddress: (
     fun: (arg?: string) => string | undefined
@@ -31,7 +26,6 @@ const Row: React.FC<{
     tokenInfo: { address: tokenAddress, symbol, price, image, decimals },
   },
   addressInfo,
-  addressTransactions,
   chartOpened,
   setChartOpenedTokenAddress,
 }) => (
@@ -114,7 +108,6 @@ const Row: React.FC<{
           {...{
             tokenAddress,
             addressInfo,
-            addressTransactions,
           }}
         />
       )}
