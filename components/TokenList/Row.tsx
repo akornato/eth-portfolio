@@ -20,7 +20,6 @@ MotionBox.displayName = "MotionBox";
 const Row: React.FC<{
   token: Token;
   addressInfo?: AddressInfo;
-  addressHistory?: AddressHistory;
   addressTransactions?: AddressTransactions;
   chartOpened?: boolean;
   setChartOpenedTokenAddress: (
@@ -32,7 +31,6 @@ const Row: React.FC<{
     tokenInfo: { address: tokenAddress, symbol, price, image, decimals },
   },
   addressInfo,
-  addressHistory,
   addressTransactions,
   chartOpened,
   setChartOpenedTokenAddress,
@@ -116,7 +114,6 @@ const Row: React.FC<{
           {...{
             tokenAddress,
             addressInfo,
-            addressHistory,
             addressTransactions,
           }}
         />

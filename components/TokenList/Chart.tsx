@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AreaChart, Area, Tooltip, ResponsiveContainer } from "recharts";
 import { ethers } from "ethers";
 import { Box, Text, Center } from "@chakra-ui/react";
@@ -35,102 +35,115 @@ const CustomTooltip: React.FC<{
 export const Chart: React.FC<{
   tokenAddress?: string;
   addressInfo?: AddressInfo;
-  addressHistory?: AddressHistory;
   addressTransactions?: AddressTransactions;
-}> = ({ tokenAddress, addressInfo, addressHistory, addressTransactions }) => {
+}> = ({ tokenAddress, addressInfo, addressTransactions }) => {
+  const [addressHistory, setAddressHistory] = useState<AddressHistory>();
+
+  useEffect(() => {
+    if (tokenAddress) {
+      fetch(
+        `https://api.ethplorer.io/getAddressHistory/${
+          addressInfo?.address
+        }?apiKey=${
+          process.env.NEXT_PUBLIC_ETHPLORER_API_KEY || "freekey"
+        }&limit=1000&token=${tokenAddress}`
+      )
+        .then((res) => res.json())
+        .then(setAddressHistory);
+    }
+  }, [addressInfo, tokenAddress]);
+
   const ethHistory = useMemo(() => {
-    return (
-      addressTransactions
-        ?.sort((a, b) => a.timestamp - b.timestamp)
-        .reduce((ethHistory, tx) => {
-          const previousBalance =
-            ethHistory.length > 0
-              ? ethHistory[ethHistory.length - 1].balance
-              : 0;
-          if (tx.to === addressInfo?.address) {
-            return [
-              ...ethHistory,
-              {
-                value: tx.value,
-                timestamp: tx.timestamp,
-                balance: previousBalance + tx.value,
-                type: "Incoming",
-                symbol: "ETH",
-              },
-            ];
-          }
-          if (tx.from === addressInfo?.address) {
-            return [
-              ...ethHistory,
-              {
-                value: tx.value,
-                timestamp: tx.timestamp,
-                balance: previousBalance - tx.value,
-                type: "Outgoing",
-                symbol: "ETH",
-              },
-            ];
-          }
-          return ethHistory;
-        }, [] as TxHistory) || []
-    );
+    return addressTransactions
+      ?.sort((a, b) => a.timestamp - b.timestamp)
+      .reduce((ethHistory, tx) => {
+        const previousBalance =
+          ethHistory.length > 0 ? ethHistory[ethHistory.length - 1].balance : 0;
+        if (tx.to === addressInfo?.address) {
+          return [
+            ...ethHistory,
+            {
+              value: tx.value,
+              timestamp: tx.timestamp,
+              balance: previousBalance + tx.value,
+              type: "Incoming",
+              symbol: "ETH",
+            },
+          ];
+        }
+        if (tx.from === addressInfo?.address) {
+          return [
+            ...ethHistory,
+            {
+              value: tx.value,
+              timestamp: tx.timestamp,
+              balance: previousBalance - tx.value,
+              type: "Outgoing",
+              symbol: "ETH",
+            },
+          ];
+        }
+        return ethHistory;
+      }, [] as TxHistory);
   }, [addressTransactions, addressInfo]);
 
   const tokenHistory = useMemo(
     () =>
-      addressHistory?.operations
-        ?.sort((a, b) => a.timestamp - b.timestamp)
-        .reduce((tokenHistory, operation) => {
-          if (operation.tokenInfo.address === tokenAddress) {
-            const previousBalance =
-              tokenHistory.length > 0
-                ? tokenHistory[tokenHistory.length - 1].balance
-                : 0;
-            if (
-              operation.to === addressInfo?.address &&
-              operation.type === "transfer"
-            ) {
-              const parsedValue = parseFloat(
-                ethers.utils.formatUnits(
-                  operation.value,
-                  operation.tokenInfo.decimals
-                )
-              );
-              return [
-                ...tokenHistory,
-                {
-                  value: parsedValue,
-                  timestamp: operation.timestamp,
-                  balance: previousBalance + parsedValue,
-                  type: "Incoming",
-                  symbol: operation.tokenInfo.symbol,
-                },
-              ];
-            }
-            if (
-              operation.from === addressInfo?.address &&
-              operation.type === "transfer"
-            ) {
-              const parsedValue = parseFloat(
-                ethers.utils.formatUnits(
-                  operation.value,
-                  operation.tokenInfo.decimals
-                )
-              );
-              return [
-                ...tokenHistory,
-                {
-                  value: parsedValue,
-                  timestamp: operation.timestamp,
-                  balance: previousBalance - parsedValue,
-                  type: "Outgoing",
-                  symbol: operation.tokenInfo.symbol,
-                },
-              ];
-            }
-          }
-          return tokenHistory;
-        }, [] as TxHistory) || [],
+      tokenAddress
+        ? addressHistory?.operations
+            ?.sort((a, b) => a.timestamp - b.timestamp)
+            .reduce((tokenHistory, operation) => {
+              if (operation.tokenInfo.address === tokenAddress) {
+                const previousBalance =
+                  tokenHistory.length > 0
+                    ? tokenHistory[tokenHistory.length - 1].balance
+                    : 0;
+                if (
+                  operation.to === addressInfo?.address &&
+                  operation.type === "transfer"
+                ) {
+                  const parsedValue = parseFloat(
+                    ethers.utils.formatUnits(
+                      operation.value,
+                      operation.tokenInfo.decimals
+                    )
+                  );
+                  return [
+                    ...tokenHistory,
+                    {
+                      value: parsedValue,
+                      timestamp: operation.timestamp,
+                      balance: previousBalance + parsedValue,
+                      type: "Incoming",
+                      symbol: operation.tokenInfo.symbol,
+                    },
+                  ];
+                }
+                if (
+                  operation.from === addressInfo?.address &&
+                  operation.type === "transfer"
+                ) {
+                  const parsedValue = parseFloat(
+                    ethers.utils.formatUnits(
+                      operation.value,
+                      operation.tokenInfo.decimals
+                    )
+                  );
+                  return [
+                    ...tokenHistory,
+                    {
+                      value: parsedValue,
+                      timestamp: operation.timestamp,
+                      balance: previousBalance - parsedValue,
+                      type: "Outgoing",
+                      symbol: operation.tokenInfo.symbol,
+                    },
+                  ];
+                }
+              }
+              return tokenHistory;
+            }, [] as TxHistory) || []
+        : [],
     [addressHistory, addressInfo, tokenAddress]
   );
 

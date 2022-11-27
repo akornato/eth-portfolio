@@ -27,9 +27,8 @@ const sortTokens = (a: Token, b: Token) => {
 
 export const TokenList: React.FC<{
   addressInfo?: AddressInfo;
-  addressHistory?: AddressHistory;
   addressTransactions?: AddressTransactions;
-}> = ({ addressInfo, addressHistory, addressTransactions }) => {
+}> = ({ addressInfo, addressTransactions }) => {
   const [chartOpenedTokenAddress, setChartOpenedTokenAddress] =
     useState<string>();
 
@@ -63,7 +62,6 @@ export const TokenList: React.FC<{
           {...{
             token,
             addressInfo,
-            addressHistory,
             addressTransactions,
             setChartOpenedTokenAddress,
           }}
