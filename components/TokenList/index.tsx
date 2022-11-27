@@ -36,13 +36,18 @@ export const TokenList: React.FC<{
               rawBalance: addressInfo.ETH.rawBalance,
               tokenInfo: {
                 address: "",
-                decimals: 18,
+                decimals: "18",
                 image: "/eth.svg",
                 price: addressInfo.ETH.price,
                 symbol: "ETH",
               },
             },
-            ...(addressInfo.tokens?.sort(sortTokens) || []),
+            ...(addressInfo.tokens
+              ?.filter(
+                ({ rawBalance, tokenInfo: { decimals } }) =>
+                  rawBalance && decimals && decimals.length <= 2
+              )
+              .sort(sortTokens) || []),
           ]
         : [],
     [addressInfo]

@@ -166,7 +166,9 @@ export const Chart: React.FC<{
 
   const chartData = tokenAddress ? tokenHistory : ethHistory;
 
-  return loading ? null : chartData && chartData.length > 1 ? (
+  return loading ? null : chartData &&
+    chartData.length > 1 &&
+    chartData[chartData.length - 1].balance > 0 ? (
     <ResponsiveContainer>
       <AreaChart
         data={tokenAddress ? tokenHistory : ethHistory}

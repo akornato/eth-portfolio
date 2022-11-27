@@ -1,6 +1,6 @@
 export type TokenInfo = {
   address: string;
-  decimals: number;
+  decimals: string;
   image?: string;
   price?: { rate: number };
   symbol: string;

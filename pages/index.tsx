@@ -49,7 +49,10 @@ const Home: NextPage = () => {
             ? addressInfo.tokens.reduce(
                 (totalTokenValue, token) =>
                   totalTokenValue +
-                  (token.tokenInfo.price
+                  (token.rawBalance &&
+                  token.tokenInfo.price &&
+                  token.tokenInfo.decimals &&
+                  token.tokenInfo.decimals.length <= 2
                     ? parseFloat(
                         ethers.utils.formatUnits(
                           token.rawBalance,
