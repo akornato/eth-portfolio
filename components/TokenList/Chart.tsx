@@ -73,38 +73,42 @@ export const Chart: React.FC<{
   }, [addressInfo, tokenAddress]);
 
   const ethHistory = useMemo(() => {
-    return addressTransactions
-      ?.sort((a, b) => a.timestamp - b.timestamp)
-      .reduce((ethHistory, tx) => {
-        const previousBalance =
-          ethHistory.length > 0 ? ethHistory[ethHistory.length - 1].balance : 0;
-        if (tx.to === addressInfo?.address) {
-          return [
-            ...ethHistory,
-            {
-              value: tx.value,
-              timestamp: tx.timestamp,
-              balance: previousBalance + tx.value,
-              type: "Incoming",
-              symbol: "ETH",
-            },
-          ];
-        }
-        if (tx.from === addressInfo?.address) {
-          return [
-            ...ethHistory,
-            {
-              value: tx.value,
-              timestamp: tx.timestamp,
-              balance: previousBalance - tx.value,
-              type: "Outgoing",
-              symbol: "ETH",
-            },
-          ];
-        }
-        return ethHistory;
-      }, [] as TxHistory);
-  }, [addressTransactions, addressInfo]);
+    return tokenAddress
+      ? []
+      : addressTransactions
+          ?.sort((a, b) => a.timestamp - b.timestamp)
+          .reduce((ethHistory, tx) => {
+            const previousBalance =
+              ethHistory.length > 0
+                ? ethHistory[ethHistory.length - 1].balance
+                : 0;
+            if (tx.to === addressInfo?.address) {
+              return [
+                ...ethHistory,
+                {
+                  value: tx.value,
+                  timestamp: tx.timestamp,
+                  balance: previousBalance + tx.value,
+                  type: "Incoming",
+                  symbol: "ETH",
+                },
+              ];
+            }
+            if (tx.from === addressInfo?.address) {
+              return [
+                ...ethHistory,
+                {
+                  value: tx.value,
+                  timestamp: tx.timestamp,
+                  balance: previousBalance - tx.value,
+                  type: "Outgoing",
+                  symbol: "ETH",
+                },
+              ];
+            }
+            return ethHistory;
+          }, [] as TxHistory);
+  }, [addressTransactions, addressInfo, tokenAddress]);
 
   const tokenHistory = useMemo(
     () =>
