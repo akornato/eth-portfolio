@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { Box, HStack, Avatar, Text, Spacer } from "@chakra-ui/react";
 import { forwardRef } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { Chart } from "./Chart";
+import { Chart, chartHeight } from "./Chart";
 import { formatCurrency } from "../../shared/utils";
 import type { AddressInfo } from "../../shared/types";
 import type { Token } from "./index";
@@ -97,13 +97,7 @@ const Row: React.FC<{
           </Box>
         </HStack>
       </MotionBox>
-      <MotionBox
-        mt={4}
-        layout
-        style={{
-          height: chartOpened ? 300 : 0,
-        }}
-      >
+      <MotionBox mt={4} layout height={chartOpened ? chartHeight : 0}>
         {chartOpened && (
           <Chart
             {...{

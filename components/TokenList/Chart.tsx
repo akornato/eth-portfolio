@@ -9,6 +9,8 @@ import type {
   AddressTransactions,
 } from "../../shared/types";
 
+export const chartHeight = 300;
+
 const CustomTooltip: React.FC<{
   active?: boolean;
   payload?: [{ value: number; payload: TxHistory[0] }];
@@ -190,7 +192,7 @@ export const Chart: React.FC<{
       </AreaChart>
     </ResponsiveContainer>
   ) : (
-    <Center height={300}>
+    <Center height={chartHeight}>
       <Text>No historical data available</Text>
     </Center>
   );
