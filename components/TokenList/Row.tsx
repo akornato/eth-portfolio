@@ -64,12 +64,7 @@ const Row: React.FC<{
               name={symbol}
               placeholder="blur"
             />
-            <Box
-              maxWidth={[100, 200]}
-              overflow="hidden"
-              whiteSpace="nowrap"
-              textOverflow="ellipsis"
-            >
+            <Box wordBreak="break-all">
               <Text as="b" fontSize="xl">
                 {symbol}
               </Text>
@@ -89,7 +84,7 @@ const Row: React.FC<{
                 <Box h={2} />
               </>
             )}
-            <Text>
+            <Text wordBreak="break-all">
               {parseFloat(
                 ethers.utils.formatUnits(rawBalance, decimals)
               ).toFixed(4)}
